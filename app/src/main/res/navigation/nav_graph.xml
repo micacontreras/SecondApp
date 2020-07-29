@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/contentResolverFragment">
+
+
+    <fragment
+        android:id="@+id/firmFragment"
+        android:name="com.example.secapp.firm.FirmFragment"
+        android:label="fragment_firm"
+        tools:layout="@layout/fragment_firm" >
+        <argument
+            android:name="taskName"
+            app:argType="string" />
+        <action
+            android:id="@+id/navigateToDetail"
+            app:destination="@id/detailTask"
+            app:popUpTo="@id/listTasksFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/listTasksFragment"
+        android:name="com.example.secapp.tasks.ListTasksFragment"
+        android:label="fragment_list_tasks"
+        tools:layout="@layout/fragment_list_tasks" >
+        <action
+            android:id="@+id/navigateToFirm"
+            app:destination="@id/firmFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/detailTask"
+        android:name="com.example.secapp.detail.DetailTask"
+        android:label="fragment_detail_task"
+        tools:layout="@layout/fragment_detail_task" >
+        <argument
+            android:name="taskName"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/contentResolverFragment"
+        android:name="com.example.secapp.ContentResolverFragment"
+        android:label="ContentResolverFragment" >
+        <action
+            android:id="@+id/action_contentResolverFragment_to_listTasksFragment"
+            app:destination="@id/listTasksFragment" />
+    </fragment>
+</navigation>
