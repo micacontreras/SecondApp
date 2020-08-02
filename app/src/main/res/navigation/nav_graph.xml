@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/contentResolverFragment">
+    app:startDestination="@id/listTasksFragment">
 
 
     <fragment
@@ -36,13 +36,5 @@
         <argument
             android:name="taskName"
             app:argType="string" />
-    </fragment>
-    <fragment
-        android:id="@+id/contentResolverFragment"
-        android:name="com.example.secapp.ContentResolverFragment"
-        android:label="ContentResolverFragment" >
-        <action
-            android:id="@+id/action_contentResolverFragment_to_listTasksFragment"
-            app:destination="@id/listTasksFragment" />
     </fragment>
 </navigation>

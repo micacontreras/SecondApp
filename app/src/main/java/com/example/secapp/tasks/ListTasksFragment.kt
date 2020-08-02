@@ -1,17 +1,20 @@
 package com.example.secapp.tasks
 
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
+import android.database.Cursor
+import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Parcelable
+import android.provider.BaseColumns
+import android.provider.ContactsContract
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContentProviderCompat
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -47,6 +50,8 @@ class ListTasksFragment : Fragment() {
 
         registerListener()
         registerObservers()
+
+        startContentReceiver()
     }
 
     private fun registerObservers() {
@@ -109,5 +114,51 @@ class ListTasksFragment : Fragment() {
             mBound = false
         }
     }*/
+
+    private fun startContentReceiver(){
+        val projection = arrayOf(
+            COLUMN_ID, COLUMN_NAME, COLUMN_DESCRIPCION, COLUMN_COLOR_EVENT,
+            COLUMN_COLOR_EVENT_INT, COLUMN_START_DATE, COLUMN_START_TIME, COLUMN_STATUS)
+
+
+        val contentResolver: ContentResolver? = activity?.contentResolver
+        val cursor: Cursor? = contentResolver?.query(
+            URI,
+            projection,
+            null,
+            null,
+            null
+        )
+        if (cursor != null && cursor.count > 0) {
+            Log.d("Provider", "Ok")
+            val stringBuilderQueryResult = StringBuilder("")
+            while (cursor.moveToNext()) {
+                Log.d("Provider", "while")
+
+                stringBuilderQueryResult.append(
+                    cursor.getString(0)
+                        .toString() + " , " + cursor.getString(1) + " , " + cursor.getString(2) + "\n"
+                )
+            }
+            //textViewQueryResult.setText(stringBuilderQueryResult.toString())
+        } else {
+            Log.d("Provider", "else")
+            //textViewQueryResult.setText("No Contacts in device")
+        }
+    }
+
+
+    companion object{
+        val URI = Uri.parse("content://com.example.firstapp.provider/TasksEntity")
+        const val COLUMN_ID = BaseColumns._ID
+        const val COLUMN_NAME = "taskName"
+        const val COLUMN_DESCRIPCION = "description"
+        const val COLUMN_START_DATE = "startDate"
+        const val COLUMN_START_TIME = "startTime"
+        const val COLUMN_COLOR_EVENT = "colorEvent"
+        const val COLUMN_COLOR_EVENT_INT = "colorEventInt"
+        const val COLUMN_STATUS = "status"
+
+    }
 
 }

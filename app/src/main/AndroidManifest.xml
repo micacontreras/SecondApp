@@ -2,7 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.secapp">
 
-    <uses-permission android:name="com.android.example.wordlistsqlwithcontentpfonrovider.PERMISSION"/>
+    <uses-permission android:name="firstAppPermissions._WRITE_PERMISSION"/>
+    <uses-permission android:name="firstAppPermissions._READ_PERMISSION" />
 
     <application
         android:allowBackup="true"
