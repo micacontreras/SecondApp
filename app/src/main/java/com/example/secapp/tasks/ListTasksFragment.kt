@@ -1,28 +1,25 @@
 package com.example.secapp.tasks
 
-import android.content.*
+import android.content.ContentResolver
+import android.content.ContentValues
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
-import android.os.IBinder
-import android.os.Parcelable
 import android.provider.BaseColumns
-import android.provider.ContactsContract
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.content.ContentProviderCompat
-import androidx.fragment.app.setFragmentResult
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.secapp.R
-import com.example.secapp.database.Tasks
+import com.example.secapp.database.Converters
 import com.example.secapp.database.TasksEntity
+import com.example.secapp.statusProvider
 import kotlinx.android.synthetic.main.fragment_list_tasks.*
 
 /**
@@ -32,13 +29,18 @@ class ListTasksFragment : Fragment() {
     private lateinit var listTaskViewModel: ListTaskViewModel
     private lateinit var adapter: TaskAdapter
 
+    private var listTasks: MutableList<TasksEntity> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         listTaskViewModel = ViewModelProvider(this).get(ListTaskViewModel::class.java)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? =
         inflater.inflate(R.layout.fragment_list_tasks, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -51,7 +53,6 @@ class ListTasksFragment : Fragment() {
         registerListener()
         registerObservers()
 
-        startContentReceiver()
     }
 
     private fun registerObservers() {
@@ -60,6 +61,7 @@ class ListTasksFragment : Fragment() {
             if (task != null) {
                 if (task.isNotEmpty()) {
                     adapter.setItem(task)
+                    listTasks.addAll(task)
                 } else {
                     Toast.makeText(
                         requireContext(),
@@ -70,6 +72,7 @@ class ListTasksFragment : Fragment() {
             } else {
                 task_recycler_view.visibility = View.GONE
             }
+            if (statusProvider) startContentReceiver() else updateTask()
         })
     }
 
@@ -83,43 +86,20 @@ class ListTasksFragment : Fragment() {
 
     private fun registerListener() {
         adapter.onClick = {
-            findNavController().navigate(ListTasksFragmentDirections.navigateToFirm(it.taskName))
+            if (it.status == getString(R.string.complete)) {
+                Toast.makeText(requireContext(), "Task complete", Toast.LENGTH_LONG).show()
+            } else {
+                findNavController().navigate(ListTasksFragmentDirections.navigateToFirm(it.taskName))
+            }
         }
     }
 
-    /*private fun startTaskService(tasks: List<TasksEntity>) {
-        val listTasks: MutableList<Tasks> = ArrayList()
-        tasks.forEach {
-            val taskModel = Tasks(it.taskName, it.description, it.startDate, it.startTime, it.colorEvent, it.colorEventInt)
-            listTasks.add(taskModel)
-        }
-
-        Intent(requireContext(), TaskService::class.java).also { intent ->
-            intent.putParcelableArrayListExtra("Tasks", listTasks as ArrayList<out Parcelable?>?)
-            activity?.bindService(intent, connection, Context.BIND_AUTO_CREATE)
-        }
-    }
-
-    private var mBound: Boolean = false
-
-    private val connection = object : ServiceConnection {
-
-        override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            val binder = service as TaskService.LocalBinder
-            taskService = binder.getService()
-            mBound = true
-        }
-
-        override fun onServiceDisconnected(arg0: ComponentName) {
-            mBound = false
-        }
-    }*/
-
-    private fun startContentReceiver(){
+    private fun startContentReceiver() {
+        statusProvider = false
         val projection = arrayOf(
             COLUMN_ID, COLUMN_NAME, COLUMN_DESCRIPCION, COLUMN_COLOR_EVENT,
-            COLUMN_COLOR_EVENT_INT, COLUMN_START_DATE, COLUMN_START_TIME, COLUMN_STATUS)
-
+            COLUMN_COLOR_EVENT_INT, COLUMN_START_DATE, COLUMN_START_TIME, COLUMN_STATUS, COLUMN_FIRM
+        )
 
         val contentResolver: ContentResolver? = activity?.contentResolver
         val cursor: Cursor? = contentResolver?.query(
@@ -130,25 +110,61 @@ class ListTasksFragment : Fragment() {
             null
         )
         if (cursor != null && cursor.count > 0) {
-            Log.d("Provider", "Ok")
-            val stringBuilderQueryResult = StringBuilder("")
+            var index = 0
             while (cursor.moveToNext()) {
-                Log.d("Provider", "while")
-
-                stringBuilderQueryResult.append(
-                    cursor.getString(0)
-                        .toString() + " , " + cursor.getString(1) + " , " + cursor.getString(2) + "\n"
-                )
+                if (cursor.getString(7) == COLUMN_IN_PROGRESS) {
+                    if (listTasks.size != 0) {
+                        if (cursor.getLong(0) != listTasks[index].id) {
+                            insertTask(cursor)
+                        }
+                    } else {
+                        insertTask(cursor)
+                    }
+                }
+                index += 1
             }
-            //textViewQueryResult.setText(stringBuilderQueryResult.toString())
         } else {
             Log.d("Provider", "else")
-            //textViewQueryResult.setText("No Contacts in device")
         }
     }
 
 
-    companion object{
+    private fun updateTask() {
+        val updateValues = ContentValues().apply {
+            put("firm", getString(R.string.firm))
+        }
+        val selectionClause: String = getString(R.string.complete)
+
+        val selectionArgs: Array<String> = arrayOf(getString(R.string.inProgress))
+
+        val rowsUpdated = activity?.contentResolver?.update(
+            URI,
+            updateValues,
+            selectionClause,
+            selectionArgs
+        )!!
+
+        Log.d("update", rowsUpdated.toString())
+    }
+
+    private fun insertTask(cursor: Cursor) {
+        listTaskViewModel.insert(
+            TasksEntity(
+                cursor.getLong(0),
+                cursor.getString(1),
+                cursor.getString(2),
+                Converters().fromTimestamp(cursor.getLong(3))!!,
+                Converters().fromTimestamp(cursor.getLong(4))!!,
+                cursor.getString(5),
+                cursor.getInt(6),
+                cursor.getString(7),
+                cursor.getString(8)
+            )
+        )
+    }
+
+
+    companion object {
         val URI = Uri.parse("content://com.example.firstapp.provider/TasksEntity")
         const val COLUMN_ID = BaseColumns._ID
         const val COLUMN_NAME = "taskName"
@@ -158,7 +174,8 @@ class ListTasksFragment : Fragment() {
         const val COLUMN_COLOR_EVENT = "colorEvent"
         const val COLUMN_COLOR_EVENT_INT = "colorEventInt"
         const val COLUMN_STATUS = "status"
-
+        const val COLUMN_IN_PROGRESS = "In Progress"
+        const val COLUMN_FIRM = "firm"
     }
 
 }

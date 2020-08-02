@@ -1,12 +1,19 @@
 package com.example.secapp.firm
 
+import android.content.ContentValues
 import android.os.Bundle
+import android.provider.UserDictionary
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.arch.core.executor.TaskExecutor
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.example.secapp.R
+import com.example.secapp.database.TasksEntity
 import com.github.gcacace.signaturepad.views.SignaturePad
 import kotlinx.android.synthetic.main.fragment_firm.*
 
@@ -15,6 +22,15 @@ import kotlinx.android.synthetic.main.fragment_firm.*
  * A simple [Fragment] subclass.
  */
 class FirmFragment : Fragment() {
+    private val args: FirmFragmentArgs by navArgs()
+    private lateinit var firmViewModel: FirmViewModel
+
+    private lateinit var task: TasksEntity
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        firmViewModel = ViewModelProvider(this).get(FirmViewModel::class.java)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_firm, container, false)
@@ -22,14 +38,23 @@ class FirmFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        loadData()
         firmListener()
+    }
+
+    private fun loadData() {
+        if (args.taskName != "null" && args.taskName != null) {
+            firmViewModel.getTask(args.taskName)?.observe(viewLifecycleOwner, androidx.lifecycle.Observer { taskSearched ->
+                    taskSearched.let {
+                       task = taskSearched
+                    }
+                })
+        }
     }
 
     private fun firmListener() {
         signature_pad.setOnSignedListener(object : SignaturePad.OnSignedListener {
-            override fun onStartSigning() {
-                Toast.makeText(requireContext(), "Signing", Toast.LENGTH_LONG).show()
-            }
+            override fun onStartSigning() {}
 
             override fun onSigned() {
                 clear_button.isEnabled = true
@@ -46,8 +71,11 @@ class FirmFragment : Fragment() {
 
         save_button.setOnClickListener {
             Toast.makeText(requireContext(), "Signature saved", Toast.LENGTH_LONG).show()
+            firmViewModel.insert(
+                TasksEntity(task.id, task.taskName,
+            task.description, task.startDate, task.startTime, task.colorEvent, task.colorEventInt,getString(R.string.complete), getString(R.string.firm) )
+            )
+            findNavController().navigateUp()
         }
     }
-
-
 }

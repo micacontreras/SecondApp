@@ -37,6 +37,9 @@ class TaskAdapter internal constructor(context: Context) : RecyclerView.Adapter<
         fun bindResponse(task: TasksEntity, onClick: (TasksEntity) -> Unit) = with(itemView){
             view.item_name.text = task.taskName
             view.item_description.text = task.description
+            if(task.status == "Complete"){
+                view.item_task_completr.visibility = View.VISIBLE
+            }
             setOnClickListener{ onClick(task) }
         }
 

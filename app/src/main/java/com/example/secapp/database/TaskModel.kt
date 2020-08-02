@@ -6,10 +6,12 @@ import java.util.*
 
 @Parcelize
 data class Tasks(
+    val id: Long,
     val taskName: String,
     val description: String,
     val startDate: Date,
     val startTime: Date,
     val colorEvent: String,
-    val colorEventInt: Int
+    val colorEventInt: Int,
+    val firm: String
 ) : Parcelable

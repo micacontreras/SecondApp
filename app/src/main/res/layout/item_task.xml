@@ -40,14 +40,28 @@
 
         <TextView
             android:id="@+id/item_description"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingHorizontal="@dimen/margins"
             android:paddingVertical="@dimen/margins"
             android:text="@string/descripcion"
             android:textSize="15sp"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout3"
-            tools:layout_editor_absoluteX="4dp" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayout3" />
+
+        <TextView
+            android:id="@+id/item_task_completr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/margins"
+            android:paddingVertical="@dimen/margins"
+            android:text="@string/complete"
+            android:textColor="#D60F0F"
+            android:textSize="15sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
