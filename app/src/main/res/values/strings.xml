@@ -11,6 +11,6 @@
     <string name="mark_as_complete_task">Mark as complete task</string>
     <string name="complete">Complete</string>
     <string name="firm">true</string>
-    <string name="inProgress">In Progress</string>
+    <string name="trueFirm">true</string>
 
 </resources>

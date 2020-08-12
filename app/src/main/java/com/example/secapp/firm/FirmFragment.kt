@@ -23,14 +23,8 @@ import kotlinx.android.synthetic.main.fragment_firm.*
  */
 class FirmFragment : Fragment() {
     private val args: FirmFragmentArgs by navArgs()
-    private lateinit var firmViewModel: FirmViewModel
 
-    private lateinit var task: TasksEntity
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        firmViewModel = ViewModelProvider(this).get(FirmViewModel::class.java)
-    }
+    private lateinit var taskNameSaved: String
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_firm, container, false)
@@ -44,11 +38,7 @@ class FirmFragment : Fragment() {
 
     private fun loadData() {
         if (args.taskName != "null" && args.taskName != null) {
-            firmViewModel.getTask(args.taskName)?.observe(viewLifecycleOwner, androidx.lifecycle.Observer { taskSearched ->
-                    taskSearched.let {
-                       task = taskSearched
-                    }
-                })
+            taskNameSaved = args.taskName
         }
     }
 
@@ -71,11 +61,7 @@ class FirmFragment : Fragment() {
 
         save_button.setOnClickListener {
             Toast.makeText(requireContext(), "Signature saved", Toast.LENGTH_LONG).show()
-            firmViewModel.insert(
-                TasksEntity(task.id, task.taskName,
-            task.description, task.startDate, task.startTime, task.colorEvent, task.colorEventInt,getString(R.string.complete), getString(R.string.firm) )
-            )
-            findNavController().navigateUp()
+            findNavController().navigate(FirmFragmentDirections.navigateToDetail(taskNameSaved))
         }
     }
 }

@@ -9,13 +9,14 @@ fun showDialog(
     message: String,
     positiveButton: String,
     positiveAction: (() -> Unit)? = null,
-    negativeButton: String? = null
-) {
+    negativeButton: String? = null,
+    negativeAction: (() -> Unit)? = null
+    ) {
     AlertDialog.Builder(context).apply {
         setTitle(title)
         setMessage(message)
         setPositiveButton(positiveButton) { _, _ -> positiveAction?.invoke() }
-        setNegativeButton(negativeButton) { _, _ -> }
+        setNegativeButton(negativeButton) { _, _ -> negativeAction?.invoke() }
         create()
         show()
     }

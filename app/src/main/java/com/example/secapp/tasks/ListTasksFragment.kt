@@ -30,6 +30,7 @@ class ListTasksFragment : Fragment() {
     private lateinit var adapter: TaskAdapter
 
     private var listTasks: MutableList<TasksEntity> = ArrayList()
+    private var listCursor: MutableList<Cursor> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +73,7 @@ class ListTasksFragment : Fragment() {
             } else {
                 task_recycler_view.visibility = View.GONE
             }
-            if (statusProvider) startContentReceiver() else updateTask()
+            if (statusProvider) startContentReceiver()
         })
     }
 
@@ -120,31 +121,13 @@ class ListTasksFragment : Fragment() {
                     } else {
                         insertTask(cursor)
                     }
+                    listCursor.add(cursor)
                 }
                 index += 1
             }
         } else {
             Log.d("Provider", "else")
         }
-    }
-
-
-    private fun updateTask() {
-        val updateValues = ContentValues().apply {
-            put("firm", getString(R.string.firm))
-        }
-        val selectionClause: String = getString(R.string.complete)
-
-        val selectionArgs: Array<String> = arrayOf(getString(R.string.inProgress))
-
-        val rowsUpdated = activity?.contentResolver?.update(
-            URI,
-            updateValues,
-            selectionClause,
-            selectionArgs
-        )!!
-
-        Log.d("update", rowsUpdated.toString())
     }
 
     private fun insertTask(cursor: Cursor) {
@@ -166,6 +149,7 @@ class ListTasksFragment : Fragment() {
 
     companion object {
         val URI = Uri.parse("content://com.example.firstapp.provider/TasksEntity")
+        val URI_UPDATE = Uri.parse("content://com.example.firstapp.provider/TasksEntity/1")
         const val COLUMN_ID = BaseColumns._ID
         const val COLUMN_NAME = "taskName"
         const val COLUMN_DESCRIPCION = "description"

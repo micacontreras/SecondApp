@@ -10,7 +10,7 @@ import com.example.secapp.database.TasksRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class FirmViewModel(application: Application) : AndroidViewModel(application) {
+class DetailViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: TasksRepository
 
     init {
